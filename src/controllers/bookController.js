@@ -79,3 +79,43 @@ exports.create = async(req, res, next) => {
         next(err);
     }
 }
+
+// PUT /api/books/:id
+exports.update = async(req, res, next) => {
+    try {
+        const id = parseId(res.params.id);
+        if(!id) return res.status(400).json({
+            message: 'Id tidak valid.'
+        })
+
+        const body = req.body || {};
+        const errors = validateBook(body, { partial: true });
+        if(errors.length) {
+            return res.status(400).json({
+                message: 'Validasi gagal', errors
+            })
+        }
+
+        const { title, author, year } = body;
+        const { rows } = await pool.query(
+            `UPDATE books
+                SET title = COALESCE($1, title),
+                    author = COALESCE($2, author),
+                    year = COALESCE($3, year),
+                    updated_at = NOW()
+                WHERE id = $4
+                RETURNING *`,
+                [title?.trim() ?? null, author?.trim() ?? null, year ?? null, id]
+        );
+
+        if(rows.length === 0) {
+            return res.status(404).json({
+                message: 'Buku tidak ditemukan.'
+            })
+        }
+
+        res.json(rows[0]);
+    } catch(err) {
+        next(err);
+    }
+}
