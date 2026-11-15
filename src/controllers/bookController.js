@@ -15,3 +15,24 @@ exports.getAll = async(req, res, next) => {
         next(err);
     }
 }
+
+// GET /api/books/:id
+exports.getById = async(req, res, next) => {
+    try {
+        const id = parseId(req.params.id);
+        if(!id) return res.status(400).json({
+            message: 'Id tidak valid.'
+        });
+
+        const { rows } = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
+
+        if(rows.length === 0) {
+            return res.status(404).json({
+                message: 'Buku tidak ditemukan.'
+            });
+        }
+        res.json(rows[0]);
+    } catch(err) {
+        next(err);
+    }
+}
