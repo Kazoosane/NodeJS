@@ -119,3 +119,22 @@ exports.update = async(req, res, next) => {
         next(err);
     }
 }
+
+// DELETE /api/books/:id
+exports.remove = async(req, res, next) => {
+    try {
+        const id = parseId(req.params.id);
+        if(!id) return res.status(400).json({ message: 'Id tidak valid.' });
+
+        const { rowCount } = await pool.query('DELETE FROM books WHERE id = $1', [id]);
+        if(rowCount.length === 0) {
+            return res.status(404).json({
+                message: 'Buku tidak ditemukan.'
+            });
+        }
+
+        res.status(204).end();
+    } catch(err) {
+        next(err);
+    }
+}
