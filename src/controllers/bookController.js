@@ -6,6 +6,29 @@ const parseId = (value) => {
     return Number.isInteger(id) && id > 0 ? id : null
 };
 
+// VALIDASI INPUT
+const validateBook = (body, { partial = false } = {}) => {
+    const errors = [];
+    const { title, author, year } = body;
+
+    if(!partial || title !== undefined) {
+        if(typeof title !== "string" || title.trim() === '') {
+            errors.push('Title wajib diisi (berupa teks)');
+        }
+    }
+
+    if(!partial || author !==  undefined) {
+        if(typeof author !== 'string' || author.trim() === '') {
+            errors.push('Author wajib diisi (berupa teks)');
+        }
+    }
+
+    if(year !== undefined && year !== null && !(Number.isInteger(year) || year < 0)) {
+        errors.push('Year harus bilangan bulat >= 0');
+    }
+    return errors;
+}
+
 // GET /api/books
 exports.getAll = async(req, res, next) => {
     try {
