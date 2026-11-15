@@ -59,3 +59,23 @@ exports.getById = async(req, res, next) => {
         next(err);
     }
 }
+
+// POST /api/books
+exports.create = async(req, res, next) => {
+    try {
+        const body = req.body || {};
+        const errors = validateBook(body);
+
+        if(errors.length) {
+            return res.status(400).json({
+                message: 'Validasi gagal', errors
+            });
+        }
+
+        const { title, author, year = null } = body;
+        const { rows } = await pool.query('INSERT INTO books (title, author, year) VALUES ($1, $2, $3) RETURNING *', [title.trim(), author.trim(), year]);
+        res.status(201).json(rows[0]);
+    } catch(err) {
+        next(err);
+    }
+}
